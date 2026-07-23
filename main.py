@@ -3,8 +3,6 @@ import numpy as np
 import tkinter as tk
 from tkinter import ttk
 from PIL import Image, ImageTk
-import requests
-import threading
 import math
 
 # COCO Sınıflarının Tam Türkçe Çevirisi
@@ -38,9 +36,6 @@ class YoloApp:
         layer_names = self.net.getLayerNames()
         self.output_layers = [layer_names[i - 1] for i in self.net.getUnconnectedOutLayers()]
         self.colors = np.random.uniform(0, 255, size=(len(CLASSES), 3))
-
-        self.api_url = "https://nkugoogle.info/cam/api.php"
-        self.last_command = None 
 
         self.conf_threshold = tk.DoubleVar(value=0.5)
         self.otonom_mod = tk.BooleanVar(value=False)
@@ -87,20 +82,6 @@ class YoloApp:
         options = ["Hepsi", "insan", "şişe", "cep telefonu", "araba", "kedi", "köpek"]
         for opt in options:
             ttk.Radiobutton(self.control_frame, text=opt.capitalize(), variable=self.target_class, value=opt).pack(anchor=tk.W, pady=2)
-
-    def send_motor_command(self, ileri, geri, sol, sag, hiz=60):
-        current_command = (ileri, geri, sol, sag, hiz)
-        if self.last_command == current_command:
-            return 
-        self.last_command = current_command
-        
-        def send_request():
-            try:
-                params = {'ileri': ileri, 'geri': geri, 'sol': sol, 'sag': sag, 'hiz': hiz}
-                requests.get(self.api_url, params=params, timeout=1.0)
-            except Exception:
-                pass
-        threading.Thread(target=send_request, daemon=True).start()
 
     def estimate_distance(self, frame_height, bbox_height):
         """Kutu yüksekliğine göre tahmini bir mesafe formülü uyduruyoruz."""
@@ -219,16 +200,12 @@ class YoloApp:
 
                 if target_found and target_cx is not None:
                     if target_cx < left_zone:
-                        self.send_motor_command(ileri=0, geri=0, sol=1, sag=0)
                         cv2.putText(frame, "MOTOR: SOL", (20, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
                     elif target_cx > right_zone:
-                        self.send_motor_command(ileri=0, geri=0, sol=0, sag=1)
                         cv2.putText(frame, "MOTOR: SAG", (20, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
                     else:
-                        self.send_motor_command(ileri=0, geri=0, sol=0, sag=0)
                         cv2.putText(frame, "MOTOR: DURDU", (20, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
                 else:
-                    self.send_motor_command(ileri=0, geri=0, sol=0, sag=0)
                     cv2.putText(frame, "MOTOR: DURDU (HEDEF YOK)", (20, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 255), 2)
 
             cv2image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
@@ -247,5 +224,5 @@ if __name__ == "__main__":
     root = tk.Tk()
     # Pencereleri sığdırmak için arayüzü tam ekran başlatalım
     root.state('zoomed') 
-    app = YoloApp(root, "Radar & Takip")
+    app = YoloApp(root, "ESP32 Otonom Radar & Takip")
     root.mainloop()
