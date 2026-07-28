@@ -2,7 +2,7 @@
 
 A real-time object detection project based on the YOLO architecture. This project performs live object detection using a camera, supports object tracking, radar visualization, and distance estimation. It includes custom-trained weights for detecting multiple object classes.
 
-<img width="1325" height="572" alt="image" src="https://github.com/user-attachments/assets/c8f2e67b-a041-402b-a592-a988e6fb849b" />
+<img width="1320" height="572" alt="image" src="https://github.com/user-attachments/assets/c8f2e67b-a041-402b-a592-a988e6fb849b" />
 
 ## Features
 
